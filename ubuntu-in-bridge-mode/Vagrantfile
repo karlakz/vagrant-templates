@@ -1,0 +1,11 @@
+Vagrant.configure("2") do |config|
+    config.vm.box = "ubuntu/focal64"
+  
+    # Configure a bridged network
+    config.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)"
+  
+    # Optional: If you want Vagrant to ask which interface to bridge each
+    # time it starts up the VM, remove the bridge option:
+    # config.vm.network "public_network"
+  end
+  

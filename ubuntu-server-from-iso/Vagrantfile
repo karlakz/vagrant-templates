@@ -1,0 +1,33 @@
+#Use this code to install Ubuntu Server from ISO image
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-20.04" #Placeholder, we will boot from ISO instead.
+
+    # Provider-specific settings for VirtualBox
+  config.vm.provider "virtualbox" do |vb|
+    # Ensure the boot order prioritizes booting from the virtual DVD drive first where the ISO is attached
+    vb.customize ["modifyvm", :id, "--boot1", "dvd", "--boot2", "disk"]
+
+    # Attach the ISO file to the existing SATA controller
+    vb.customize ["storageattach", :id, "--storagectl", "SATA Controller", "--port", "0", "--device", "0", "--type", "dvddrive", "--medium", "/path/to/your/ubuntu-24.04.1-live-server-amd64.iso"]
+
+    # Create and attach a virtual hard disk to the SATA controller for installation
+    vb.customize ["createhd", "--filename", "ubuntu-server-disk.vdi", "--size", 20000]  # creates a 20 GB virtual hard disk that the Ubuntu Server can be installed on.
+    vb.customize ["storageattach", :id, "--storagectl", "SATA Controller", "--port", "1", "--device", "0", "--type", "hdd", "--medium", "ubuntu-server-disk.vdi"] #the new virtual hard disk is attached to the SATA controller
+
+    # Optionally increase VM resources (like memory or CPU)
+    vb.memory = "4096"
+    vb.cpus = 2
+  end
+
+  # General networking setup, applies to any provider
+  # Configure a bridged network
+  config.vm.network "public_network", bridge: "wlo1: Wi-Fi (Home)"
+  #This configuration forwards requests made to port 2222 on your host machine to port 22 on the Vagrant guest machine
+  config.vm.network "forwarded_port", guest: 22, host: 2222, auto_correct: true
+
+  # SSH configuration, provider-agnostic
+  # Disable Vagrant's SSH by skipping provisioning until the OS is installed
+  config.vm.boot_timeout = 3000  # Increase boot timeout to avoid SSH errors
+  config.ssh.insert_key = false   # Disable automatic SSH key generatation and insertion of a new key pair 
+end
+  

@@ -1,0 +1,27 @@
+#After installation has been completed, use this code to boot from virtual hard disk where Ubunu Server was installed
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-20.04" #Placeholder, we will boot from ISO instead.
+
+    # Provider-specific settings for VirtualBox
+  config.vm.provider "virtualbox" do |vb|
+    # Ensure the boot order prioritizes booting from the hard disk after the installation is complete.
+    vb.customize ["modifyvm", :id, "--boot1", "disk", "--boot2", "dvd"]
+   #The virtual hard disk is attached to the SATA controller
+    vb.customize ["storageattach", :id, "--storagectl", "SATA Controller", "--port", "1", "--device", "0", "--type", "hdd", "--medium", "ubuntu-server-disk.vdi"] 
+    # Optionally increase VM resources (like memory or CPU)
+    vb.memory = "4096"
+    vb.cpus = 2
+  end
+
+  # General networking setup, applies to any provider
+  # Configure a bridged network
+  config.vm.network "public_network", bridge: "wlo1: Wi-Fi (Home)"
+  #This configuration forwards requests made to port 8080 on your host machine to port 80 on the Vagrant guest machine
+  config.vm.network "forwarded_port", guest: 22, host: 2222, auto_correct: true
+
+  # SSH configuration, provider-agnostic
+  # Use vagrant's default insecure key (no need for password)
+  config.ssh.username = "vagrant"  # Ensure this matches the username of your VM
+  config.ssh.private_key_path = "~/.vagrant.d/insecure_private_key" # Ensure key matches and Vagrant uses the default insecure private key for passwordless login
+  end
+  
